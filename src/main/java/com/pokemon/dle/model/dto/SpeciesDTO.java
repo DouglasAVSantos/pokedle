@@ -13,6 +13,7 @@ public class SpeciesDTO {
     @JsonProperty(value = "evolution_chain")
     private EvolutionChain evolutionChain;
     private Generation generation;
+    private Habitat habitat;
 
     public String getGeneration() {
         return generation.name;
@@ -22,9 +23,22 @@ public class SpeciesDTO {
         return evolutionChain.url;
     }
 
+    public String getColor() {
+        return color.name;
+    }
+
+    public String getHabitat() {
+        return habitat.name;
+    }
+
     @Getter
     static class Color {
        private String name;
+    }
+
+    @Getter
+    static class Habitat {
+        private String name;
     }
 
     @Getter
