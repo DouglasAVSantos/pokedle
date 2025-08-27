@@ -1,11 +1,11 @@
 package com.pokemon.dle.service;
 
+import com.pokemon.dle.client.PokemonApiClient;
 import com.pokemon.dle.exception.NotFoundException;
 import com.pokemon.dle.model.dto.*;
 import com.pokemon.dle.utility.Translator;
 import lombok.Data;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Map;
 import java.util.Random;
@@ -17,13 +17,13 @@ public class PokemonService {
 
     private final SpeciesService speciesService;
     private final EvolutionService evolutionService;
-    private final WebClient webClient;
+    private final PokemonApiClient pokemonApiClient;
     private final Integer id;
     private final PokemonDTO pokemonDoDia;
 
 
-    public PokemonService(WebClient webClient, SpeciesService speciesService, EvolutionService evolutionService) {
-        this.webClient = webClient;
+    public PokemonService(PokemonApiClient pokemonApiClient, SpeciesService speciesService, EvolutionService evolutionService) {
+        this.pokemonApiClient = pokemonApiClient;
         this.speciesService = speciesService;
         this.evolutionService = evolutionService;
         this.id = (new Random().nextInt(150)) + 1;
@@ -32,21 +32,11 @@ public class PokemonService {
 
 
     public PokemonDTO buscarPokemonDoDia() {
-        return webClient
-                .get()
-                .uri("/pokemon/" + id)
-                .retrieve()
-                .bodyToMono(PokemonDTO.class)
-                .block();
+        return pokemonApiClient.get("/pokemon/" + id, PokemonDTO.class);
     }
 
     public PokemonDTO buscarPokemonDoDia(String pokemon) {
-        return webClient
-                .get()
-                .uri("/pokemon/" + pokemon)
-                .retrieve()
-                .bodyToMono(PokemonDTO.class)
-                .block();
+        return pokemonApiClient.get("/pokemon/" + pokemon, PokemonDTO.class);
     }
 
     public PokemonRequest pokemonDoDiaRequest() {

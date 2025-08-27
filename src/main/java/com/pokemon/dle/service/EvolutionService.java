@@ -1,33 +1,24 @@
 package com.pokemon.dle.service;
 
 import com.pokemon.dle.model.dto.EvolutionDTO;
+import com.pokemon.dle.client.PokemonApiClient;
 import com.pokemon.dle.model.dto.PokemonEvolutionPhaseDTO;
-import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-@Data
+@RequiredArgsConstructor
 @Service
 public class EvolutionService {
     private final SpeciesService speciesService;
-    private final WebClient webClient;
+    private final PokemonApiClient pokemonApiClient;
 
-    public EvolutionService(WebClient webClient, SpeciesService speciesService) {
-        this.webClient = webClient;
-        this.speciesService = speciesService;
-    }
 
     public EvolutionDTO buscarevolucao(String url) {
-        return webClient
-                .get()
-                .uri(url)
-                .retrieve()
-                .bodyToMono(EvolutionDTO.class)
-                .block();
+        return pokemonApiClient.get(url, EvolutionDTO.class);
     }
 
 
@@ -35,7 +26,6 @@ public class EvolutionService {
         EvolutionDTO.Chain chain = buscarevolucao(url).getChain();
         List<PokemonEvolutionPhaseDTO> lista = new ArrayList<>();
         percorrer(chain.getSpecies(), chain.getEvolvesTo(), 0, lista);
-        System.out.println(lista);
         return lista;
     }
 
