@@ -5,7 +5,10 @@ import com.pokemon.dle.model.dto.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 
 @Service
@@ -30,6 +33,7 @@ public class PokemonService {
                 .bodyToMono(PokemonDTO.class)
                 .block();
     }
+
     public PokemonDTO buscarPokemonDoDia(String pokemon) {
         return webClient
                 .get()
@@ -75,11 +79,29 @@ public class PokemonService {
                 .block();
     }
 
+    public EvolutionDTO buscarevolucao(String url) {
+        return webClient
+                .get()
+                .uri(url)
+                .retrieve()
+                .bodyToMono(EvolutionDTO.class)
+                .block();
+    }
+
 
     public List<PokemonEvolutionPhaseDTO> montarFases() {
         EvolutionDTO.Chain chain = buscarevolucao().getChain();
         List<PokemonEvolutionPhaseDTO> lista = new ArrayList<>();
         percorrer(chain.getSpecies(), chain.getEvolvesTo(), 0, lista);
+        System.out.println(lista);
+        return lista;
+    }
+
+    public List<PokemonEvolutionPhaseDTO> montarFases(String url) {
+        EvolutionDTO.Chain chain = buscarevolucao(url).getChain();
+        List<PokemonEvolutionPhaseDTO> lista = new ArrayList<>();
+        percorrer(chain.getSpecies(), chain.getEvolvesTo(), 0, lista);
+        System.out.println(lista);
         return lista;
     }
 
@@ -97,10 +119,10 @@ public class PokemonService {
         }
     }
 
-    public PokemonResponse respostaPokemonDoDia() {
+    public PokemonRequest respostaPokemonDoDia() {
         SpeciesDTO specieDTO = buscarPokemonDoDiaSpecies();
         PokemonTranslator ptBr = new PokemonTranslator();
-        return new PokemonResponse(
+        return new PokemonRequest(
 
                 pokemonDoDia.getName(),
                 PokemonTranslator.traduzirTipo(pokemonDoDia.getTypes().get(0).getType().getName()),
@@ -110,77 +132,101 @@ public class PokemonService {
                 PokemonTranslator.traduzirCor(specieDTO.getColor()),
                 PokemonTranslator.traduzirHabitat(specieDTO.getHabitat()),
                 montarFases().stream()
-                        .filter(p -> p.getNome().equals(buscarPokemonDoDia().getName()))
+                        .filter(p -> p.getNome().equals(pokemonDoDia.getName()))
                         .findFirst().map(PokemonEvolutionPhaseDTO::getFase)
                         .orElse(0)
         );
+
     }
-    public List<PokemonResponse> pokemonRequest(String pokemon) {
+
+    public PokemonResponse pokemonRequest(String pokemon) {
         PokemonTranslator ptBr = new PokemonTranslator();
-        PokemonResponse pokeDoDia = respostaPokemonDoDia();
-        PokemonDTO pokeDTORequest ;
+        PokemonRequest pokeDoDia = respostaPokemonDoDia();
+        PokemonDTO pokeDTORequest;
         SpeciesDTO specieDTORequest;
 
-        try{
-           pokeDTORequest = buscarPokemonDoDia(pokemon);
-           specieDTORequest = buscarPokemonDoDiaSpeciesPeloNome(pokemon);
+        try {
+            pokeDTORequest = buscarPokemonDoDia(pokemon);
+            specieDTORequest = buscarPokemonDoDiaSpeciesPeloNome(pokemon);
         } catch (RuntimeException e) {
             throw new NotFoundException("Pokemon não encontrado");
         }
 
-        PokemonResponse pokeDoDiaRequest = new PokemonResponse(
+        PokemonRequest pokeDoDiaRequest = new PokemonRequest(
 
-                pokeDTORequest.getName().substring(0,1).toUpperCase()+pokeDTORequest.getName().substring(1),
+                pokeDTORequest.getName(),
                 PokemonTranslator.traduzirTipo(pokeDTORequest.getTypes().get(0).getType().getName()),
                 PokemonTranslator.traduzirTipo(pokeDTORequest.getTypes().size() > 1 ? pokeDTORequest.getTypes().get(1).getType().getName() : "sem tipo 2"),
                 pokeDTORequest.getPeso().toString(),
                 pokeDTORequest.getAltura().toString(),
                 PokemonTranslator.traduzirCor(specieDTORequest.getColor()),
                 PokemonTranslator.traduzirHabitat(specieDTORequest.getHabitat()),
-                montarFases().stream()
-                        .filter(p -> p.getNome().equals(buscarPokemonDoDia().getName()))
+                montarFases(specieDTORequest.getEvolutionChain()).stream()
+                        .filter(p -> p.getNome().equals(pokeDTORequest.getName()))
                         .findFirst().map(PokemonEvolutionPhaseDTO::getFase)
                         .orElse(0)
         );
-
-        if(!pokeDoDiaRequest.equals(pokeDoDia)){
-        List<PokemonResponse> lista = new ArrayList<>();
-        lista.add(verificaDTO(pokeDoDia,pokeDoDiaRequest));
-        lista.add(pokeDoDiaRequest);
-        return lista;
+        System.out.println(pokeDoDiaRequest.equals(pokeDoDia));
+        if (pokeDoDiaRequest.equals(pokeDoDia)) {
+            System.out.println("aqui");
+            return new PokemonResponse(pokeDoDia, pokeDoDiaRequest);
         }
-        List<PokemonResponse> lista = new ArrayList<>();
-        lista.add(pokeDoDia);
-        lista.add(pokeDoDiaRequest);
-        return lista;
+
+        return verificaDTO(pokeDoDia, pokeDoDiaRequest);
     }
 
-    public PokemonResponse verificaDTO(PokemonResponse dto1, PokemonResponse dto2){
+    public PokemonResponse verificaDTO(PokemonRequest pokemonCerto, PokemonRequest pokemonTentativaPlayer) {
         String altura = "";
         String peso = "";
-        if(Double.parseDouble(dto1.getAltura()) > Double.parseDouble(dto2.getAltura())){
-          altura =  "MAIS ALTO";
+        if (Double.parseDouble(pokemonCerto.getAltura()) > Double.parseDouble(pokemonTentativaPlayer.getAltura())) {
+            altura = "MAIS ALTO";
         }
-        if(Double.parseDouble(dto1.getAltura()) < Double.parseDouble(dto2.getAltura())){
-           altura = "MAIS BAIXO";
+        if (Double.parseDouble(pokemonCerto.getAltura()) < Double.parseDouble(pokemonTentativaPlayer.getAltura())) {
+            altura = "MAIS BAIXO";
         }
 
-        if(Double.parseDouble(dto1.getPeso()) > Double.parseDouble(dto2.getPeso())){
-            peso =  "MAIS PESADO";
+        if (Double.parseDouble(pokemonCerto.getPeso()) > Double.parseDouble(pokemonTentativaPlayer.getPeso())) {
+            peso = "MAIS PESADO";
         }
-        if(Double.parseDouble(dto1.getPeso()) < Double.parseDouble(dto2.getPeso())){
+        if (Double.parseDouble(pokemonCerto.getPeso()) < Double.parseDouble(pokemonTentativaPlayer.getPeso())) {
             peso = "MAIS LEVE";
         }
 
-       return new PokemonResponse(
-         dto1.getNome().equals(dto2.getNome()) ? dto1.getNome() : "ERRADO",
-         dto1.getTipo1().equals(dto2.getTipo1()) ? dto1.getTipo1() : "ERRADO",
-         dto1.getTipo2().equals(dto2.getTipo2()) ? dto1.getTipo2() : "ERRADO",
-         dto1.getPeso().equals(dto2.getPeso()) ? dto1.getPeso() : peso,
-        dto1.getAltura().equals(dto2.getAltura()) ? dto1.getAltura() : altura,
-         dto1.getCor().equals(dto2.getCor()) ? dto1.getCor() : "ERRADO",
-         dto1.getHabitat().equals(dto2.getHabitat()) ? dto1.getHabitat() : "ERRADO",
-         dto1.getFase() == dto2.getFase() ? dto1.getFase() : 00
+        return new PokemonResponse(
+                Map.of(
+                        "mensagem", "Erro"),
+                Map.of(
+                        "valor", pokemonTentativaPlayer.getNome(),
+                        "status", pokemonCerto.getNome().equals(pokemonTentativaPlayer.getNome()) ? "ACERTO!" : "ERRADO"
+                ),
+                Map.of(
+                        "valor", pokemonTentativaPlayer.getTipo1(),
+                        "status", pokemonCerto.getTipo1().equals(pokemonTentativaPlayer.getTipo1()) ? "ACERTO!" : "ERRADO"
+                ),
+                Map.of(
+                        "valor", pokemonTentativaPlayer.getTipo2(),
+                        "status", pokemonCerto.getTipo2().equals(pokemonTentativaPlayer.getTipo2()) ? "ACERTO!" : "ERRADO"
+                ),
+                Map.of(
+                        "valor", pokemonTentativaPlayer.getPeso(),
+                        "status", pokemonCerto.getPeso().equals(pokemonTentativaPlayer.getPeso()) ? "ACERTO!" : peso
+                ),
+                Map.of(
+                        "valor", pokemonTentativaPlayer.getAltura(),
+                        "status", pokemonCerto.getAltura().equals(pokemonTentativaPlayer.getAltura()) ? "ACERTO!" : altura
+                ),
+                Map.of(
+                        "valor", pokemonTentativaPlayer.getCor(),
+                        "status", pokemonCerto.getCor().equals(pokemonTentativaPlayer.getCor()) ? "ACERTO!" : "ERRADO"
+                ),
+                Map.of(
+                        "valor", pokemonTentativaPlayer.getHabitat(),
+                        "status", pokemonCerto.getHabitat().equals(pokemonTentativaPlayer.getHabitat()) ? "ACERTO!" : "ERRADO"
+                ),
+                Map.of(
+                        "valor", pokemonTentativaPlayer.getFase().toString(),
+                        "status", pokemonCerto.getFase().equals(pokemonTentativaPlayer.getFase()) ? "ACERTO!" : "ERRADO"
+                )
         );
     }
 }
