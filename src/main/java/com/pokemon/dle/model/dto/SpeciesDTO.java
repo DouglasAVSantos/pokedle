@@ -42,7 +42,7 @@ public class SpeciesDTO {
     }
 
     @Getter
-    static class EvolutionChain{
+    public static class EvolutionChain{
         public String url;
     }
 

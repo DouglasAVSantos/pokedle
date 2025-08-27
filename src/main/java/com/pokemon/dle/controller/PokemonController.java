@@ -1,7 +1,7 @@
 package com.pokemon.dle.controller;
 
 
-import com.pokemon.dle.configuration.exception.NotFoundException;
+import com.pokemon.dle.exception.NotFoundException;
 import com.pokemon.dle.model.dto.PokemonRequest;
 import com.pokemon.dle.model.dto.PokemonResponse;
 import com.pokemon.dle.service.PokemonService;
@@ -24,7 +24,7 @@ public class PokemonController {
 
     @GetMapping
     public ResponseEntity<PokemonRequest> buscarPokemon() {
-        return ResponseEntity.ok(pokemonService.respostaPokemonDoDia());
+        return ResponseEntity.ok(pokemonService.pokemonDoDiaRequest());
     }
 
     @PostMapping(path = "/jogar")
@@ -34,7 +34,7 @@ public class PokemonController {
         }
         try {
             chutesUsados.add(id);
-            historico.add(pokemonService.pokemonRequest(id));
+            historico.add(pokemonService.startGame(id));
             Collections.reverse(historico);
             return ResponseEntity.ok(historico);
         } catch (NotFoundException e) {

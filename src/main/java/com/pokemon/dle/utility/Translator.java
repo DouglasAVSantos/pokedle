@@ -1,8 +1,8 @@
-package com.pokemon.dle.model.dto;
+package com.pokemon.dle.utility;
 
 import java.util.Map;
 
-public class PokemonTranslator {
+public class Translator {
 
     public static final Map<String, String> tipos = Map.ofEntries(
             Map.entry("grass", "Grama"),

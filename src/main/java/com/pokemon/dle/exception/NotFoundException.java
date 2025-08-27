@@ -1,4 +1,4 @@
-package com.pokemon.dle.configuration.exception;
+package com.pokemon.dle.exception;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException(String message) {
