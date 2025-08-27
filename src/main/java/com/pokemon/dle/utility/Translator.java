@@ -1,10 +1,13 @@
 package com.pokemon.dle.utility;
 
+import org.springframework.stereotype.Component;
+
 import java.util.Map;
 
+@Component
 public class Translator {
 
-    public static final Map<String, String> tipos = Map.ofEntries(
+    public  final Map<String, String> tipos = Map.ofEntries(
             Map.entry("grass", "Grama"),
             Map.entry("poison", "Veneno"),
             Map.entry("fire", "Fogo"),
@@ -25,7 +28,7 @@ public class Translator {
             // Adicione os outros conforme necessário
     );
 
-    public static final Map<String, String> cores = Map.ofEntries(
+    public  final Map<String, String> cores = Map.ofEntries(
             Map.entry("green", "Verde"),
             Map.entry("red", "Vermelho"),
             Map.entry("blue", "Azul"),
@@ -38,7 +41,7 @@ public class Translator {
             Map.entry("black", "Preto")
     );
 
-    public static final Map<String, String> habitats = Map.ofEntries(
+    public  final Map<String, String> habitats = Map.ofEntries(
             Map.entry("forest", "Floresta"),
             Map.entry("grassland", "Campo"),
             Map.entry("mountain", "Montanha"),
@@ -49,15 +52,18 @@ public class Translator {
             Map.entry("rough-terrain", "Terreno Acidentado")
     );
 
-    public static String traduzirTipo(String tipo) {
+    public String traduzirTipo(String tipo) {
+
         return tipos.getOrDefault(tipo, tipo);
     }
 
-    public static String traduzirCor(String cor) {
+    public  String traduzirCor(String cor) {
+
         return cores.getOrDefault(cor, cor);
     }
 
-    public static String traduzirHabitat(String habitat) {
+    public  String traduzirHabitat(String habitat) {
+
         return habitats.getOrDefault(habitat, habitat);
     }
 }

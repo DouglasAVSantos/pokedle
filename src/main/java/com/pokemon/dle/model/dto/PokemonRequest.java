@@ -10,8 +10,8 @@ import java.util.Objects;
 @Data
 public class PokemonRequest{
     private String nome;
-    private String tipo2;
     private String tipo1;
+    private String tipo2;
     private String peso;
     private String altura;
     private String cor;

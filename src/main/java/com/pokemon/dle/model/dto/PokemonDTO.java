@@ -25,13 +25,13 @@ public class PokemonDTO {
     }
 
     @Getter
-    @JsonIgnoreProperties
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TypeSlot {
         private Type type;
     }
 
     @Getter
-    @JsonIgnoreProperties
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Type {
         private String name;
     }

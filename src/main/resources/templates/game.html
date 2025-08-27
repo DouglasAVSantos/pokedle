@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Pokedle - Adivinhe o Pokémon</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        h1 {
+            color: #e3350d;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 60%;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            background-color: #3b4cca;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .error {
+            color: #e3350d;
+            background-color: #fdd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .results-table th, .results-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        .results-table th {
+            background-color: #f8f8f8;
+        }
+        .correct { background-color: #c8e6c9; color: #256029; }
+        .wrong { background-color: #ffcdd2; color: #c63737; }
+
+        /* Novas classes para os ícones de seta */
+        .higher,
+        .lower {
+            background-color: #ffcdd2; /* Mantém o fundo vermelho para a célula inteira */
+        }
+
+        .higher::after,
+        .lower::after {
+            content: ''; /* Essencial para que o pseudo-elemento seja exibido */
+            display: inline-block; /* Permite definir tamanho e alinhamento */
+            width: 16px;
+            height: 16px;
+            margin-left: 8px; /* Espaço entre o número e a seta */
+            vertical-align: middle; /* Alinha a seta verticalmente com o texto */
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain; /* Garante que a seta caiba no espaço definido */
+        }
+
+        .higher::after {
+            /* Ícone de seta para cima (SVG embutido) */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23c63737' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 19V5M5 12l7-7 7 7'/%3E%3C/svg%3E");
+        }
+
+        .lower::after {
+            /* Ícone de seta para baixo (SVG embutido) */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23c63737' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14M19 12l-7 7-7-7'/%3E%3C/svg%3E");
+        }
+
+        .win-message {
+            font-size: 2em;
+            color: #4caf50;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Pokedle</h1>
+    <p>Adivinhe o Pokémon do dia!</p>
+
+    <form th:action="@{/guess}" method="post">
+        <input type="text" name="pokemonName" placeholder="Digite o nome de um Pokémon" required autofocus>
+        <button type="submit">Adivinhar</button>
+    </form>
+
+    <!-- Botão para reiniciar o jogo -->
+    <form th:if="${history != null and !history.isEmpty()}" th:action="@{/reset}" method="get" style="margin-top: -15px; margin-bottom: 20px;">
+        <button type="submit" style="background-color: #6c757d;">Novo Jogo</button>
+    </form>
+
+    <!-- Se houver um erro, exibe esta div -->
+    <div th:if="${error}" class="error">
+        <p th:text="${error}"></p>
+    </div>
+
+    <!-- Se houver um histórico, exibe a tabela -->
+    <div th:if="${history != null and !history.isEmpty()}">
+        <!-- Mensagem de vitória -->
+        <div th:if="${history[0].nome.status == 'correct'}" class="win-message">
+            VOCÊ ACERTOU! PARABÉNS!
+        </div>
+
+        <table class="results-table">
+            <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Tipo 1</th>
+                <th>Tipo 2</th>
+                <th>Peso</th>
+                <th>Altura</th>
+                <th>Cor</th>
+                <th>Habitat</th>
+                <th>Fase</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Itera sobre cada palpite no histórico, criando uma nova linha para cada um -->
+            <tr th:each="guess : ${history}">
+                <td th:classappend="${guess.nome.status}" th:text="${guess.nome.valor}"></td>
+                <td th:classappend="${guess.tipo1.status}" th:text="${guess.tipo1.valor}"></td>
+                <td th:classappend="${guess.tipo2.status}" th:text="${guess.tipo2.valor}"></td>
+                <td th:classappend="${guess.peso.status}" th:text="${guess.peso.valor}"></td>
+                <td th:classappend="${guess.altura.status}" th:text="${guess.altura.valor}"></td>
+                <td th:classappend="${guess.cor.status}" th:text="${guess.cor.valor}"></td>
+                <td th:classappend="${guess.habitat.status}" th:text="${guess.habitat.valor}"></td>
+                <td th:classappend="${guess.fase.status}" th:text="${guess.fase.valor}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
