@@ -9,6 +9,7 @@ import java.util.List;
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PokemonDTO {
+    private Integer id;
     private String name;
     @JsonProperty("weight")
     private Double peso;

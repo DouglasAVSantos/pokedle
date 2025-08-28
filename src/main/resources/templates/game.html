@@ -21,7 +21,7 @@
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 600px;
+            max-width: 900px;
             text-align: center;
         }
         h1 {
@@ -65,6 +65,7 @@
         }
         .results-table th {
             background-color: #f8f8f8;
+            white-space: nowrap; /* Impede que o texto do cabeçalho quebre a linha */
         }
         .correct { background-color: #c8e6c9; color: #256029; }
         .wrong { background-color: #ffcdd2; color: #c63737; }
@@ -104,6 +105,39 @@
             font-weight: bold;
             margin-top: 20px;
         }
+        .pokemon-image {
+            width: 60px; /* Define um tamanho fixo para a imagem */
+            height: 60px;
+            object-fit: contain; /* Garante que a imagem não seja distorcida */
+        }
+
+        /* Animação para as colunas aparecerem */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Aplica a animação apenas na primeira linha (o palpite mais recente) */
+        .results-table tbody tr:first-child td {
+            opacity: 0; /* Começa invisível para a animação funcionar */
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        /* Adiciona um atraso para cada coluna, criando um efeito escalonado */
+        .results-table tbody tr:first-child td:nth-child(2) { animation-delay: 0.5s; }
+        .results-table tbody tr:first-child td:nth-child(3) { animation-delay: 1s; }
+        .results-table tbody tr:first-child td:nth-child(4) { animation-delay: 1.5s; }
+        .results-table tbody tr:first-child td:nth-child(5) { animation-delay: 2s; }
+        .results-table tbody tr:first-child td:nth-child(6) { animation-delay: 2.5s; }
+        .results-table tbody tr:first-child td:nth-child(7) { animation-delay: 3s; }
+        .results-table tbody tr:first-child td:nth-child(8) { animation-delay: 3.5s; }
+        .results-table tbody tr:first-child td:nth-child(9) { animation-delay: 4s; }
     </style>
 </head>
 <body>
@@ -137,6 +171,7 @@
         <table class="results-table">
             <thead>
             <tr>
+                <th>Imagem</th>
                 <th>Nome</th>
                 <th>Tipo 1</th>
                 <th>Tipo 2</th>
@@ -150,6 +185,9 @@
             <tbody>
             <!-- Itera sobre cada palpite no histórico, criando uma nova linha para cada um -->
             <tr th:each="guess : ${history}">
+                <td>
+                    <img th:if="${guess.imagem != null and guess.imagem.valor != null}" th:src="${guess.imagem.valor}" alt="Imagem do Pokémon" class="pokemon-image"/>
+                </td>
                 <td th:classappend="${guess.nome.status}" th:text="${guess.nome.valor}"></td>
                 <td th:classappend="${guess.tipo1.status}" th:text="${guess.tipo1.valor}"></td>
                 <td th:classappend="${guess.tipo2.status}" th:text="${guess.tipo2.valor}"></td>

@@ -9,6 +9,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @Data
 public class PokemonRequest{
+    private Integer id;
     private String nome;
     private String tipo1;
     private String tipo2;
