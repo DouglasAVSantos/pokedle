@@ -1,6 +1,7 @@
 package com.pokemon.dle.controller;
 
 import com.pokemon.dle.exception.NotFoundException;
+import com.pokemon.dle.model.dto.PokemonDropdownItemDTO;
 import com.pokemon.dle.model.dto.PokemonResponse;
 import com.pokemon.dle.service.GameService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,8 @@ import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -28,6 +31,8 @@ public class GameController {
         if (history != null) {
             model.addAttribute("history", history);
         }
+
+        addAvailablePokemonToModel(model, session);
         // Simplesmente retorna o nome do arquivo html em /resources/templates
         return "game";
     }
@@ -56,6 +61,7 @@ public class GameController {
         // 4. Adiciona a lista inteira ao model para o Thymeleaf usar
         model.addAttribute("history", history);
 
+        addAvailablePokemonToModel(model, session);
         // Retorna para a mesma página, que agora terá os dados do resultado ou do erro
         return "game";
     }
@@ -65,5 +71,30 @@ public class GameController {
         // Remove o histórico da sessão, efetivamente reiniciando o jogo
         session.removeAttribute("history");
         return "redirect:/";
+    }
+
+    private void addAvailablePokemonToModel(Model model, HttpSession session) {
+        // 1. Busca a lista completa de Pokémon
+        List<PokemonDropdownItemDTO> allPokemon = gameService.getPokemonListForDropdown();
+
+        // 2. Pega o histórico para saber quais já foram palpitados
+        List<PokemonResponse> history = (List<PokemonResponse>) session.getAttribute("history");
+
+        if (history != null && !history.isEmpty()) {
+            // 3. Extrai os nomes dos Pokémon já palpitados (em minúsculas)
+            Set<String> guessedNames = history.stream()
+                    .map(response -> response.getNome().get("valor").toLowerCase())
+                    .collect(Collectors.toSet());
+
+            // 4. Filtra a lista completa, removendo os que já foram palpitados
+            List<PokemonDropdownItemDTO> availablePokemon = allPokemon.stream()
+                    .filter(pokemon -> !guessedNames.contains(pokemon.getName().toLowerCase()))
+                    .collect(Collectors.toList());
+
+            model.addAttribute("pokemonList", availablePokemon);
+        } else {
+            // Se não há histórico, usa a lista completa
+            model.addAttribute("pokemonList", allPokemon);
+        }
     }
 }

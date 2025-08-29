@@ -34,8 +34,8 @@ public class PokemonResponse {
         this.nome = Map.of("valor", request2.getNome(), "status", "correct");
         this.tipo1 = Map.of("valor", request2.getTipo1(), "status", "correct");
         this.tipo2 = Map.of("valor", request2.getTipo2(), "status", "correct");
-        this.peso = Map.of("valor", request2.getPeso(), "status", "correct");
-        this.altura = Map.of("valor", request2.getAltura(), "status", "correct");
+        this.peso = Map.of("valor", request2.getPeso() + " Kg", "status", "correct");
+        this.altura = Map.of("valor", request2.getAltura() + " M", "status", "correct");
         this.cor = Map.of("valor", request2.getCor(), "status", "correct");
         this.habitat = Map.of("valor", request2.getHabitat(), "status", "correct");
         this.fase = Map.of("valor", request2.getFase().toString(), "status", "correct");

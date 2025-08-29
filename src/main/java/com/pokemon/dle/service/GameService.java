@@ -9,7 +9,9 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -31,8 +33,8 @@ public class GameService {
                 pokemonDaily.buscarPokemonDoDia().getName(),
                 translator.traduzirTipo(pokemonDaily.buscarPokemonDoDia().getTypes().get(0).getType().getName()),
                 translator.traduzirTipo(pokemonDaily.buscarPokemonDoDia().getTypes().size() > 1 ? pokemonDaily.buscarPokemonDoDia().getTypes().get(1).getType().getName() : "sem tipo 2"),
-                pokemonDaily.buscarPokemonDoDia().getPeso().toString(),
-                pokemonDaily.buscarPokemonDoDia().getAltura().toString(),
+                String.valueOf(pokemonDaily.buscarPokemonDoDia().getPeso()),
+                String.valueOf(pokemonDaily.buscarPokemonDoDia().getAltura()),
                 translator.traduzirCor(specieDTO.getColor()),
                 translator.traduzirHabitat(specieDTO.getHabitat()),
                 evolutionService.montarFases(speciesService.retornaUriEvolucao(pokemonDaily.getId())).stream()
@@ -60,8 +62,8 @@ public class GameService {
                 pokemonDoJogadorDTO.getName(),
                 translator.traduzirTipo(pokemonDoJogadorDTO.getTypes().get(0).getType().getName()),
                 translator.traduzirTipo(pokemonDoJogadorDTO.getTypes().size() > 1 ? pokemonDoJogadorDTO.getTypes().get(1).getType().getName() : "sem tipo 2"),
-                pokemonDoJogadorDTO.getPeso().toString(),
-                pokemonDoJogadorDTO.getAltura().toString(),
+                String.valueOf(pokemonDoJogadorDTO.getPeso()),
+                String.valueOf(pokemonDoJogadorDTO.getAltura()),
                 translator.traduzirCor(speciesDoPokemonDoJogadorDTO.getColor()),
                 translator.traduzirHabitat(speciesDoPokemonDoJogadorDTO.getHabitat()),
                 evolutionService.montarFases(speciesDoPokemonDoJogadorDTO.getEvolutionChain()).stream()
@@ -79,10 +81,10 @@ public class GameService {
 
     public PokemonResponse verificaDTO(PokemonRequest pokemonCerto, PokemonRequest pokemonTentativaPlayer) {
         String alturaStatus;
-        // O pokémon correto é mais alto que a tentativa, então a seta deve apontar para cima.
+
         if (Double.parseDouble(pokemonCerto.getAltura()) > Double.parseDouble(pokemonTentativaPlayer.getAltura())) {
             alturaStatus = "higher";
-        // O pokémon correto é mais baixo que a tentativa, então a seta deve apontar para baixo.
+
         } else if (Double.parseDouble(pokemonCerto.getAltura()) < Double.parseDouble(pokemonTentativaPlayer.getAltura())) {
             alturaStatus = "lower";
         } else {
@@ -90,10 +92,10 @@ public class GameService {
         }
 
         String pesoStatus;
-        // O pokémon correto é mais pesado que a tentativa, então a seta deve apontar para cima.
+
         if (Double.parseDouble(pokemonCerto.getPeso()) > Double.parseDouble(pokemonTentativaPlayer.getPeso())) {
             pesoStatus = "higher";
-        // O pokémon correto é mais leve que a tentativa, então a seta deve apontar para baixo.
+
         } else if (Double.parseDouble(pokemonCerto.getPeso()) < Double.parseDouble(pokemonTentativaPlayer.getPeso())) {
             pesoStatus = "lower";
         } else {
@@ -119,11 +121,11 @@ public class GameService {
                     "status", pokemonCerto.getTipo2().equals(pokemonTentativaPlayer.getTipo2()) ? "correct" : "wrong"
             ),
             Map.of(
-                    "valor", pokemonTentativaPlayer.getPeso(),
+                    "valor", pokemonTentativaPlayer.getPeso() + " Kg",
                     "status", pesoStatus
             ),
             Map.of(
-                    "valor", pokemonTentativaPlayer.getAltura(),
+                    "valor", pokemonTentativaPlayer.getAltura() + " M",
                     "status", alturaStatus
             ),
             Map.of(
@@ -139,5 +141,19 @@ public class GameService {
                     "status", pokemonCerto.getFase().equals(pokemonTentativaPlayer.getFase()) ? "correct" : "wrong"
             )
         );
+    }
+
+    public List<PokemonDropdownItemDTO> getPokemonListForDropdown() {
+        PokemonListResponseDTO response = pokemonApiClient.get("/pokemon?limit=151", PokemonListResponseDTO.class);
+        return response.getResults().stream()
+                .map(pokemon -> {
+                    String[] urlParts = pokemon.getUrl().split("/");
+                    String id = urlParts[urlParts.length - 1];
+                    String imageUrl = String.format("https://www.pokemon.com/static-assets/content-assets/cms2/img/pokedex/full/%03d.png", Integer.parseInt(id));
+                    String capitalizedName = pokemon.getName().substring(0, 1).toUpperCase() + pokemon.getName().substring(1);
+
+                    return new PokemonDropdownItemDTO(capitalizedName, imageUrl);
+                })
+                .collect(Collectors.toList());
     }
 }

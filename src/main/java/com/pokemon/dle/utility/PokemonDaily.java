@@ -9,9 +9,9 @@ import java.util.Random;
 @Component
 public class PokemonDaily {
 
-    private final Integer id;
+    private Integer id;
     private final PokemonApiClient pokemonApiClient;
-    private final PokemonDTO pokemonDto;
+    private PokemonDTO pokemonDto;
 
     public PokemonDaily(PokemonApiClient pokemonApiClient) {
         this.pokemonApiClient = pokemonApiClient;

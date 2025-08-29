@@ -25,7 +25,6 @@ public class Translator {
             Map.entry("normal", "Normal"),
             Map.entry("ghost", "Fantasma"),
             Map.entry("steel", "Aço")
-            // Adicione os outros conforme necessário
     );
 
     public  final Map<String, String> cores = Map.ofEntries(
@@ -49,7 +48,8 @@ public class Translator {
             Map.entry("sea", "Mar"),
             Map.entry("urban", "Urbano"),
             Map.entry("rare", "Raro"),
-            Map.entry("rough-terrain", "Terreno Acidentado")
+            Map.entry("rough-terrain", "Terreno Acidentado"),
+            Map.entry("waters-edge", "Beira D'água")
     );
 
     public String traduzirTipo(String tipo) {
@@ -67,4 +67,3 @@ public class Translator {
         return habitats.getOrDefault(habitat, habitat);
     }
 }
-
