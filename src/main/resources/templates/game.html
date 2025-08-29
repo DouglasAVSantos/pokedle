@@ -233,7 +233,7 @@
     <h1><img th:src="@{/pokedle-logo-pokemons.webp}" alt="Pokedle Logo" class="pokedle-logo"/></h1>
     <p>Adivinhe o Pokémon do dia!</p>
 
-    <form th:action="@{/guess}" method="post" class="guess-form">
+    <form th:action="@{/guess}" method="post" class="guess-form" th:if="${history == null or history.isEmpty() or history[0].nome.status != 'correct'}">
         <select id="pokemon-select" name="pokemonName" required>
             <option value="" disabled selected></option> 
             <option th:each="pokemon : ${pokemonList}"
