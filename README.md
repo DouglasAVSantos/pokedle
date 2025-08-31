@@ -68,10 +68,16 @@ Siga os passos abaixo para ter o Pokedle rodando na sua máquina.
    cd pokedle
    ```
 
-3. **Execute a aplicação com o Maven:**
-   O Maven irá baixar todas as dependências e iniciar o servidor web embutido.
+3. **Execute este comando no Prompt de Comando ou PowerShell**\
+   O Gradlew irá baixar todas as dependências e iniciar o servidor web embutido.\
+\
+Windowns:
    ```bash
-   mvn spring-boot:run
+   gradlew bootRun
+   ```
+   No Linux/Mac:
+      ```bash
+   ./gradlew bootRun
    ```
 
 4. **Abra no navegador:**
