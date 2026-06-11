@@ -4,14 +4,15 @@ import com.pokemon.dle.exception.NotFoundException;
 import com.pokemon.dle.model.dto.PokemonDropdownItemDTO;
 import com.pokemon.dle.model.dto.PokemonResponse;
 import com.pokemon.dle.service.GameService;
+import com.pokemon.dle.service.ScoreService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,20 +24,36 @@ import java.util.stream.Collectors;
 public class GameController {
 
     private final GameService gameService;
+    private final ScoreService scoreService;
 
     @GetMapping("/")
-    public String showGamePage(HttpSession session, Model model) {
+    public String showGamePage(HttpSession session, Model model, HttpServletRequest request) {
         List<PokemonResponse> history = (List<PokemonResponse>) session.getAttribute("history");
         if (history != null) {
             model.addAttribute("history", history);
         }
+
+        String clientIp = getClientIpAddress(request);
+        model.addAttribute("showPlayerNamePrompt", scoreService.findTodayScore(clientIp).isEmpty());
 
         addAvailablePokemonToModel(model, session);
         return "game";
     }
 
     @PostMapping("/guess")
-    public String handleGuess(@RequestParam String pokemonName, Model model, HttpSession session) {
+    public String handleGuess(@RequestParam String pokemonName,
+                              @RequestParam(required = false) String playerName,
+                              Model model,
+                              HttpSession session,
+                              HttpServletRequest request) {
+        String clientIp = getClientIpAddress(request);
+
+        if (scoreService.findTodayScore(clientIp).filter(score -> score.isSolved()).isPresent()) {
+            model.addAttribute("error", "Você já acertou o Pokémon do dia. Não é possível continuar jogando.");
+            addAvailablePokemonToModel(model, session);
+            return "game";
+        }
+
         List<PokemonResponse> history = (List<PokemonResponse>) session.getAttribute("history");
         if (history == null) {
             history = new ArrayList<>();
@@ -45,6 +62,7 @@ public class GameController {
         try {
             PokemonResponse response = gameService.startGame(pokemonName.toLowerCase().trim());
             history.add(0, response);
+            scoreService.saveScore(clientIp, playerName, history.size(), response.getMensagem().get("mensagem").contains("parabéns"));
 
         } catch (NotFoundException e) {
             model.addAttribute("error", "Pokémon '" + pokemonName + "' não encontrado. Tente novamente!");
@@ -61,6 +79,14 @@ public class GameController {
     public String resetGame(HttpSession session) {
         session.removeAttribute("history");
         return "redirect:/";
+    }
+
+    private String getClientIpAddress(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isBlank()) {
+            ip = request.getRemoteAddr();
+        }
+        return ip.split(",")[0].trim();
     }
 
     private void addAvailablePokemonToModel(Model model, HttpSession session) {

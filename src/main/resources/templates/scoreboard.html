@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Pokedle - Placar</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #111827; color: #f9fafb; margin: 0; padding: 32px; }
+        .card { max-width: 900px; margin: 0 auto; background: #1f2937; border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+        h1 { margin-top: 0; font-size: 2rem; }
+        p { color: #d1d5db; }
+        table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 12px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #374151; }
+        th { background: #111827; color: #fbbf24; }
+        .badge { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: .85rem; font-weight: bold; }
+        .win { background: #14532d; color: #bbf7d0; }
+        .lose { background: #7f1d1d; color: #fecaca; }
+        a { color: #93c5fd; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Placar geral</h1>
+    <p>Histórico completo dos jogadores registrados no sistema.</p>
+
+    <table>
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Jogador</th>
+            <th>Tentativas</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="entry, i : ${scores}">
+            <td th:text="${i.index + 1}"></td>
+            <td th:text="${entry.playerName != null && !#strings.isEmpty(entry.playerName) && !#strings.equalsIgnoreCase(entry.playerName, 'Anônimo') ? entry.playerName : 'Jogador sem nome'}"></td>
+            <td th:text="${entry.attempts}"></td>
+            <td>
+                <span class="badge" th:classappend="${entry.solved ? ' win' : ' lose'}" th:text="${entry.solved ? 'Acertou' : 'Não acertou'}"></span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p style="margin-top: 16px;"><a th:href="@{/}">Voltar ao jogo</a></p>
+</div>
+</body>
+</html>
